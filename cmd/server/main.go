@@ -1,10 +1,9 @@
 package main
 
 import (
-	"context"
 	"fmt"
 
-	db "github.com/javing77/go-rest-postgress/internal/db"
+	"github.com/javing77/go-rest-postgress/internal/db"
 )
 
 // Run - is going to be responsible for
@@ -19,9 +18,12 @@ func Run() error {
 		return err
 	}
 
-	if err := db.Ping(context.Background()); err != nil {
+	if err := db.MigrateDB(); err != nil {
+		fmt.Println("failed to migrate database")
 		return err
 	}
+
+	fmt.Println("succefully connected and pinged database")
 	return nil
 }
 
