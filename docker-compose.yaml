@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:12.2-alpine
+    container_name: "comments-database"
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - 5432:5432
+    networks:
+      - fullstack
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  api:
+    build: .
+    container_name: "comments-rest-api"
+    networks:
+      - fullstack
+    depends_on:
+      - db
+    environment:
+      DB_USERNAME: "postgres"
+      DB_PASSWORD: "postgres"
+      DB_DB: "postgres"
+      DB_HOST: "db"
+      DB_TABLE: "postgres"
+      DB_PORT: "5432"
+      SSL_MODE: "disable"
+    ports:
+      - 8080:8080
+
+volumes:
+  postgres-data:
+
+networks:
+  fullstack:
+    driver: bridge
