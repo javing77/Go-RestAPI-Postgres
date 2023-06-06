@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/javing77/go-rest-postgress/internal/comment"
 	"github.com/javing77/go-rest-postgress/internal/db"
 )
 
@@ -23,7 +25,11 @@ func Run() error {
 		return err
 	}
 
-	fmt.Println("succefully connected and pinged database")
+	cmtService := comment.NewService(db)
+	fmt.Println(cmtService.GetComment(
+		context.Background(),
+		"2aecc170-04a9-11ee-be56-0242ac120002",
+	))
 	return nil
 }
 
