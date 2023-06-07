@@ -31,4 +31,21 @@ func TestCommentDatabase(t *testing.T) {
 
 	})
 
+	t.Run("test delete comment", func(t *testing.T) {
+		db, err := db.NewDataBase()
+		assert.NoError(t, err)
+		cmt, err := db.PostComment(context.Background(), comment.Comment{
+			Slug:   "slug",
+			Author: "author",
+			Body:   "body",
+		})
+		assert.NoError(t, err)
+
+		err = db.DeleteComment(context.Background(), cmt.ID)
+		assert.NoError(t, err)
+
+		_, err = db.GetComment(context.Background(), cmt.ID)
+		assert.Error(t, err)
+	})
+
 }
