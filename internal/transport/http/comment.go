@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	"github.com/javing77/go-rest-postgress/internal/comment"
 )
@@ -21,19 +22,42 @@ type CommentService interface {
 	DeleteComment(ctx context.Context, ID string) error
 }
 
+type PostCommentRequest struct {
+	Slug   string `json:"slog" validate:"required"`
+	Author string `json:"author" validate:"required"`
+	Body   string `json:"body" validate:"required"`
+}
+
+func convertPostCommentRequestToComment(cmt PostCommentRequest) comment.Comment {
+	return comment.Comment{
+		Slug:   cmt.Slug,
+		Author: cmt.Author,
+		Body:   cmt.Body,
+	}
+}
+
 func (h *Handler) PostComment(w http.ResponseWriter, r *http.Request) {
-	var cmt comment.Comment
+	var cmt PostCommentRequest
 	if err := json.NewDecoder(r.Body).Decode(&cmt); err != nil {
 		return
 	}
 
-	cmt, err := h.Service.PostComment(r.Context(), cmt)
+	validate := validator.New()
+	err := validate.Struct(cmt)
 	if err != nil {
-		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	if err := json.NewEncoder(w).Encode(cmt); err != nil {
+	convertdComment := convertPostCommentRequestToComment(cmt)
+	postedComment, err := h.Service.PostComment(r.Context(), convertdComment)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "not a valid comment", http.StatusBadRequest)
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(postedComment); err != nil {
 		panic(err)
 	}
 }
